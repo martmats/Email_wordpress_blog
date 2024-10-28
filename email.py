@@ -94,6 +94,12 @@ def publish_to_wordpress(title, content):
         "status": "publish"
     }
     response = requests.post(url, headers=headers, json=post_data)
+
+    if response.status_code == 201:
+        st.success("Post published successfully.")
+    else:
+        st.error(f"Failed to publish post: {response.status_code} - {response.text}")
+
     return response.json()
 
 # Main logic to fetch, process, and publish emails
