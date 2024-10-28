@@ -56,10 +56,13 @@ def fetch_emails():
             st.write("Gmail service built successfully.")
 
             # Build the query using the keywords and date range
-            keyword_query = " OR ".join(keywords.split(","))
+            keyword_query = " OR ".join([f'"{k.strip()}"' for k in keywords.split(",")])  # Add quotes around each keyword
             query = f"({keyword_query})"
             if start_date and end_date:
                 query += f" after:{start_date.strftime('%Y/%m/%d')} before:{end_date.strftime('%Y/%m/%d')}"
+            
+            # Debug: Print the constructed query to verify
+            st.write("Constructed Gmail Query:", query)
 
             results = service.users().messages().list(userId='me', q=query).execute()
             emails = results.get('messages', [])
