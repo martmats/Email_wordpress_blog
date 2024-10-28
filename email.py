@@ -29,13 +29,11 @@ else:
     st.warning("Please enter your OpenAI API Key.")
 
 # Function to generate article content from email text using GPT-3.5 Turbo
-
-
 def generate_article(content):
     st.write("Generating article with OpenAI...")
     try:
-        # Adjusted code for OpenAI version >=1.0.0
-        response = openai.completions.create(
+        # Corrected call for OpenAI's ChatCompletion API
+        response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
                 {
@@ -68,9 +66,6 @@ def generate_article(content):
     except Exception as e:
         st.error(f"Error generating article: {e}")
         return ""
-
-
-
 
 
 # Gmail API setup to retrieve relevant emails
