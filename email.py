@@ -6,6 +6,9 @@ from google.oauth2.credentials import Credentials
 from datetime import datetime
 import json
 
+# Define the Gmail API scopes for read-only access
+SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+
 # Streamlit Sidebar for Secret Keys and Filters
 st.sidebar.title("API Settings")
 openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password")
