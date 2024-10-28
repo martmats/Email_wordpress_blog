@@ -32,36 +32,40 @@ else:
 def generate_article(content):
     st.write("Generating article with OpenAI...")
     try:
-        # Adjusted code for the new OpenAI API format
-        prompt = (
-            "Eres un experto redactor en español especializado en la creación de artículos de blog "
-            "atractivos, informativos y optimizados para SEO. Utiliza el siguiente contenido de correo "
-            "electrónico para generar un artículo en español con las siguientes características:\n\n"
-            "1. **Título**: Crea un título atractivo y optimizado para SEO que refleje con precisión el tema.\n"
-            "2. **Introducción**: Comienza con una introducción cautivadora y fácil de relacionar, que resalte la "
-            "importancia del tema y presente una declaración de tesis clara.\n"
-            "3. **Estructura**: Desglosa los puntos principales en secciones con subtítulos claros. Cada sección debe "
-            "ser informativa, proporcionando ejemplos prácticos y detalles específicos.\n"
-            "4. **Ejemplos**: Incluye ejemplos relevantes o estudios de caso para ilustrar los puntos clave. "
-            "Por ejemplo: 'Imagina una tienda de ropa que utiliza la inteligencia artificial para analizar el "
-            "comportamiento de sus clientes y enviar ofertas personalizadas justo antes de cada cambio de temporada.'\n"
-            "5. **Palabras Clave**: Integra de manera natural palabras clave como 'inteligencia artificial en marketing', "
-            "'transformación digital', y 'tecnología en marketing' sin sobrecargar el texto.\n"
-            "6. **Conclusión**: Termina con una conclusión que invite a la acción o a la reflexión, como animar al lector a "
-            "explorar más el tema o compartir sus opiniones.\n\n"
-            "Escribe el artículo en un tono cálido, conversacional y accesible. Asegúrate de que sea fácil de leer, con párrafos "
-            "cortos y un lenguaje claro. Utiliza un tono directo que hable a las necesidades e intereses del lector.\n\n"
-            "Contenido del correo:\n" + content
-        )
-        
-        # Use openai.Completion.create with the updated prompt approach
-        response = openai.Completion.create(
-            model="text-davinci-003",  # Ensure to use a model compatible with Completion
-            prompt=prompt,
-            max_tokens=1500,  # Adjust as needed for content length
+        # Using gpt-3.5-turbo with ChatCompletion endpoint
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "Eres un experto redactor en español especializado en la creación de artículos de blog "
+                        "atractivos, informativos y optimizados para SEO. Utiliza el siguiente contenido de correo "
+                        "electrónico para generar un artículo en español con las siguientes características:\n\n"
+                        "1. **Título**: Crea un título atractivo y optimizado para SEO que refleje con precisión el tema.\n"
+                        "2. **Introducción**: Comienza con una introducción cautivadora y fácil de relacionar, que resalte la "
+                        "importancia del tema y presente una declaración de tesis clara.\n"
+                        "3. **Estructura**: Desglosa los puntos principales en secciones con subtítulos claros. Cada sección debe "
+                        "ser informativa, proporcionando ejemplos prácticos y detalles específicos.\n"
+                        "4. **Ejemplos**: Incluye ejemplos relevantes o estudios de caso para ilustrar los puntos clave. "
+                        "Por ejemplo: 'Imagina una tienda de ropa que utiliza la inteligencia artificial para analizar el "
+                        "comportamiento de sus clientes y enviar ofertas personalizadas justo antes de cada cambio de temporada.'\n"
+                        "5. **Palabras Clave**: Integra de manera natural palabras clave como 'inteligencia artificial en marketing', "
+                        "'transformación digital', y 'tecnología en marketing' sin sobrecargar el texto.\n"
+                        "6. **Conclusión**: Termina con una conclusión que invite a la acción o a la reflexión, como animar al lector a "
+                        "explorar más el tema o compartir sus opiniones.\n\n"
+                        "Escribe el artículo en un tono cálido, conversacional y accesible. Asegúrate de que sea fácil de leer, con párrafos "
+                        "cortos y un lenguaje claro. Utiliza un tono directo que hable a las necesidades e intereses del lector."
+                    )
+                },
+                {"role": "user", "content": content}
+            ],
+            max_tokens=1500,
             temperature=0.7
         )
-        article_content = response.choices[0].text.strip()
+        
+        # Extract the generated article from the response
+        article_content = response['choices'][0]['message']['content'].strip()
         return article_content
     except Exception as e:
         st.error(f"Error generating article: {e}")
