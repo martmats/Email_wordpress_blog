@@ -34,7 +34,8 @@ else:
 def generate_article(content):
     st.write("Generating article with OpenAI...")
     try:
-        response = openai.ChatCompletion.create(
+        # Adjusted code for OpenAI version >=1.0.0
+        response = openai.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {
@@ -67,6 +68,7 @@ def generate_article(content):
     except Exception as e:
         st.error(f"Error generating article: {e}")
         return ""
+
 
 
 
