@@ -3,7 +3,6 @@ import streamlit as st
 import requests
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
-from datetime import datetime
 import json
 
 # Define the Gmail API scope for read-only access
@@ -17,9 +16,10 @@ wp_password = st.sidebar.text_input("WordPress Application Password", type="pass
 gmail_credentials = st.sidebar.file_uploader("Upload Gmail credentials.json", type="json")
 
 st.sidebar.title("Email Filter Settings")
-start_date = st.sidebar.date_input("Start Date", datetime.now())
-end_date = st.sidebar.date_input("End Date", datetime.now())
 keywords = st.sidebar.text_input("Keywords for Email Fetching", "AI, artificial intelligence, IA, inteligencia artificial")
+use_date_filter = st.sidebar.checkbox("Enable Date Filter", value=True)
+start_date = st.sidebar.date_input("Start Date", datetime.now()) if use_date_filter else None
+end_date = st.sidebar.date_input("End Date", datetime.now()) if use_date_filter else None
 
 # Set OpenAI API Key
 if openai_api_key:
@@ -55,10 +55,12 @@ def fetch_emails():
             service = build('gmail', 'v1', credentials=creds)
             st.write("Gmail service built successfully.")
 
-            # Build the query using the keywords and date range
+            # Build the query using the keywords and date range if enabled
             keyword_query = " OR ".join([f'"{k.strip()}"' for k in keywords.split(",")])  # Add quotes around each keyword
             query = f"({keyword_query})"
-            if start_date and end_date:
+            
+            # Add date filters only if enabled
+            if use_date_filter and start_date and end_date:
                 query += f" after:{start_date.strftime('%Y/%m/%d')} before:{end_date.strftime('%Y/%m/%d')}"
             
             # Debug: Print the constructed query to verify
@@ -82,27 +84,6 @@ def fetch_emails():
     else:
         st.error("Please upload your Gmail credentials JSON file.")
         return []
-
-# Function to publish the generated article to WordPress
-def publish_to_wordpress(title, content):
-    st.write("Publishing to WordPress...")
-    url = "https://yourwordpresssite.com/wp-json/wp/v2/posts"
-    headers = {
-        "Authorization": f"Basic {wp_username}:{wp_password}"
-    }
-    post_data = {
-        "title": title,
-        "content": content,
-        "status": "publish"
-    }
-    response = requests.post(url, headers=headers, json=post_data)
-
-    if response.status_code == 201:
-        st.success("Post published successfully.")
-    else:
-        st.error(f"Failed to publish post: {response.status_code} - {response.text}")
-
-    return response.json()
 
 # Main logic to fetch, process, and preview articles before publishing
 if st.button("Fetch and Generate Articles"):
