@@ -16,10 +16,10 @@ wp_username = st.sidebar.text_input("WordPress Username")
 wp_password = st.sidebar.text_input("WordPress Application Password", type="password")
 gmail_credentials = st.sidebar.file_uploader("Upload Gmail credentials.json", type="json")
 
-
 st.sidebar.title("Email Filter Settings")
 start_date = st.sidebar.date_input("Start Date", datetime.now())
 end_date = st.sidebar.date_input("End Date", datetime.now())
+keywords = st.sidebar.text_input("Keywords for Email Fetching", "AI, artificial intelligence, IA, inteligencia artificial")
 
 # Set OpenAI API Key
 if openai_api_key:
@@ -29,6 +29,7 @@ else:
 
 # Function to generate article content from email text using GPT-3.5 Turbo
 def generate_article(content):
+    st.write("Generating article with OpenAI...")
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -37,21 +38,7 @@ def generate_article(content):
                 "content": (
                     "Eres un experto redactor en español especializado en la creación de artículos de blog "
                     "atractivos, informativos y optimizados para SEO. Utiliza el siguiente contenido de correo "
-                    "electrónico para generar un artículo en español con las siguientes características:\n\n"
-                    "1. **Título**: Crea un título atractivo y optimizado para SEO que refleje con precisión el tema.\n"
-                    "2. **Introducción**: Comienza con una introducción cautivadora y fácil de relacionar, que resalte la "
-                    "importancia del tema y presente una declaración de tesis clara.\n"
-                    "3. **Estructura**: Desglosa los puntos principales en secciones con subtítulos claros. Cada sección debe "
-                    "ser informativa, proporcionando ejemplos prácticos y detalles específicos.\n"
-                    "4. **Ejemplos**: Incluye ejemplos relevantes o estudios de caso para ilustrar los puntos clave. "
-                    "Por ejemplo: 'Imagina una tienda de ropa que utiliza la inteligencia artificial para analizar el "
-                    "comportamiento de sus clientes y enviar ofertas personalizadas justo antes de cada cambio de temporada.'\n"
-                    "5. **Palabras Clave**: Integra de manera natural palabras clave como 'inteligencia artificial en marketing', "
-                    "'transformación digital', y 'tecnología en marketing' sin sobrecargar el texto.\n"
-                    "6. **Conclusión**: Termina con una conclusión que invite a la acción o a la reflexión, como animar al lector a "
-                    "explorar más el tema o compartir sus opiniones.\n\n"
-                    "Escribe el artículo en un tono cálido, conversacional y accesible. Asegúrate de que sea fácil de leer, con párrafos "
-                    "cortos y un lenguaje claro. Utiliza un tono directo que hable a las necesidades e intereses del lector."
+                    "electrónico para generar un artículo en español."
                 )
             },
             {"role": "user", "content": content}
@@ -68,8 +55,9 @@ def fetch_emails():
             service = build('gmail', 'v1', credentials=creds)
             st.write("Gmail service built successfully.")
 
-            # Query for specific keywords and date range
-            query = "AI OR artificial intelligence OR IA OR inteligencia artificial"
+            # Build the query using the keywords and date range
+            keyword_query = " OR ".join(keywords.split(","))
+            query = f"({keyword_query})"
             if start_date and end_date:
                 query += f" after:{start_date.strftime('%Y/%m/%d')} before:{end_date.strftime('%Y/%m/%d')}"
 
