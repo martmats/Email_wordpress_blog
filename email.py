@@ -6,12 +6,16 @@ from google.oauth2.credentials import Credentials
 from datetime import datetime
 import json
 
+# Define the Gmail API scope for read-only access
+SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+
 # Streamlit Sidebar for Secret Keys and Filters
 st.sidebar.title("API Settings")
 openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password")
 wp_username = st.sidebar.text_input("WordPress Username")
 wp_password = st.sidebar.text_input("WordPress Application Password", type="password")
 gmail_credentials = st.sidebar.file_uploader("Upload Gmail credentials.json", type="json")
+
 
 st.sidebar.title("Email Filter Settings")
 start_date = st.sidebar.date_input("Start Date", datetime.now())
