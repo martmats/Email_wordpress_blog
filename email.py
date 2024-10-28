@@ -3,8 +3,8 @@ import streamlit as st
 import requests
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
-import json
 from datetime import datetime
+import json
 
 # Define the Gmail API scope for read-only access
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
@@ -28,11 +28,10 @@ if openai_api_key:
 else:
     st.warning("Please enter your OpenAI API Key.")
 
-# Function to generate article content from email text using GPT-3.5 Turbo
+# Function to generate article content from email text using gpt-3.5-turbo
 def generate_article(content):
     st.write("Generating article with OpenAI...")
     try:
-        # Using gpt-3.5-turbo with ChatCompletion endpoint
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -64,7 +63,6 @@ def generate_article(content):
             temperature=0.7
         )
         
-        # Extract the generated article from the response
         article_content = response['choices'][0]['message']['content'].strip()
         return article_content
     except Exception as e:
@@ -81,14 +79,12 @@ def fetch_emails():
             st.write("Gmail service built successfully.")
 
             # Build the query using the keywords and date range if enabled
-            keyword_query = " OR ".join([f'"{k.strip()}"' for k in keywords.split(",")])  # Add quotes around each keyword
+            keyword_query = " OR ".join([f'"{k.strip()}"' for k in keywords.split(",")])
             query = f"({keyword_query})"
             
-            # Add date filters only if enabled
             if use_date_filter and start_date and end_date:
                 query += f" after:{start_date.strftime('%Y/%m/%d')} before:{end_date.strftime('%Y/%m/%d')}"
             
-            # Debug: Print the constructed query to verify
             st.write("Constructed Gmail Query:", query)
 
             results = service.users().messages().list(userId='me', q=query).execute()
@@ -98,7 +94,7 @@ def fetch_emails():
             for email in emails:
                 msg = service.users().messages().get(userId='me', id=email['id']).execute()
                 subject = [header['value'] for header in msg['payload']['headers'] if header['name'] == 'Subject'][0]
-                body = msg['snippet']  # Get snippet for preview
+                body = msg['snippet']
                 email_data.append({"subject": subject, "body": body})
             
             st.write(f"Fetched {len(email_data)} emails.")
@@ -110,6 +106,29 @@ def fetch_emails():
         st.error("Please upload your Gmail credentials JSON file.")
         return []
 
+# Function to publish the generated article to WordPress
+def publish_to_wordpress(title, content):
+    st.write("Attempting to publish to WordPress...")
+    url = "https://www.estrategiaprompt.com/wp-json/wp/v2/posts"  # Replace with your WordPress site
+    headers = {
+        "Authorization": f"Basic {wp_username}:{wp_password}"
+    }
+    post_data = {
+        "title": title,
+        "content": content,
+        "status": "publish"  # Use "draft" if you want to review before publishing
+    }
+    
+    response = requests.post(url, headers=headers, json=post_data)
+    
+    if response.status_code == 201:
+        st.success("Post published successfully.")
+    else:
+        st.error(f"Failed to publish post: {response.status_code} - {response.text}")
+        st.write(response.json())  # Debugging information
+
+    return response.json()
+
 # Main logic to fetch, process, and preview articles before publishing
 if st.button("Fetch and Generate Articles"):
     if not openai_api_key or not wp_username or not wp_password or gmail_credentials is None:
@@ -120,13 +139,11 @@ if st.button("Fetch and Generate Articles"):
             title = email["subject"]
             content = generate_article(email["body"])
             
-            # Display the preview of the article
             st.subheader("Article Preview")
             st.write("**Title:**", title)
             st.write("**Content:**")
             st.write(content)
             
-            # Confirm before publishing
             if st.button("Publish to WordPress"):
                 publish_response = publish_to_wordpress(title, content)
                 st.write("Publish response:", publish_response)
